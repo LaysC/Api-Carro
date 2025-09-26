@@ -18,38 +18,38 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Path("/musicas")
-public class MusicaResource {
+@Path("/carros")
+public class CarroResource {
 
     @GET
     @Operation(
-            summary = "Retorna todas as músicas (getAll)",
-            description = "Retorna uma lista de músicas por padrão no formato JSON"
+            summary = "Retorna todos os carros (getAll)",
+            description = "Retorna uma lista de carros por padrão no formato JSON"
     )
     @APIResponse(
             responseCode = "200",
             description = "Lista retornada com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Musica.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Carro.class, type = SchemaType.ARRAY)
             )
     )
     public Response getAll(){
-        return Response.ok(Musica.listAll()).build();
+        return Response.ok(Carro.listAll()).build();
     }
 
     @GET
     @Path("{id}")
     @Operation(
-            summary = "Retorna uma música pela busca por ID (getById)",
-            description = "Retorna uma música específica pela busca de ID colocado na URL no formato JSON por padrão"
+            summary = "Retorna um carro pela busca por ID (getById)",
+            description = "Retorna um carro específico pela busca de ID colocado na URL no formato JSON por padrão"
     )
     @APIResponse(
             responseCode = "200",
             description = "Item retornado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Musica.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Carro.class, type = SchemaType.ARRAY)
             )
     )
     @APIResponse(
@@ -60,9 +60,9 @@ public class MusicaResource {
                     schema = @Schema(implementation = String.class))
     )
     public Response getById(
-            @Parameter(description = "Id da música a ser pesquisada", required = true)
+            @Parameter(description = "Id do carro a ser pesquisado", required = true)
             @PathParam("id") long id){
-        Musica entity = Musica.findById(id);
+        Carro entity = Carro.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -71,31 +71,31 @@ public class MusicaResource {
 
     @GET
     @Operation(
-            summary = "Retorna as músicas conforme o sistema de pesquisa (search)",
-            description = "Retorna uma lista de músicas filtrada conforme a pesquisa por padrão no formato JSON"
+            summary = "Retorna os carros conforme o sistema de pesquisa (search)",
+            description = "Retorna uma lista de carros filtrada conforme a pesquisa por padrão no formato JSON"
     )
     @APIResponse(
             responseCode = "200",
             description = "Item retornado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Musica.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Carro.class, type = SchemaType.ARRAY)
             )
     )
     @Path("/search")
     public Response search(
-            @Parameter(description = "Query de buscar por título, ano de lançamento ou duração")
+            @Parameter(description = "Query de busca por modelo, ano de fabricação ou cilindradas")
             @QueryParam("q") String q,
             @Parameter(description = "Campo de ordenação da lista de retorno")
             @QueryParam("sort") @DefaultValue("id") String sort,
-            @Parameter(description = "Esquema de filtragem de músicas por ordem crescente ou decrescente")
+            @Parameter(description = "Esquema de filtragem de carros por ordem crescente ou decrescente")
             @QueryParam("direction") @DefaultValue("asc") String direction,
             @Parameter(description = "Define qual página será retornada na response")
             @QueryParam("page") @DefaultValue("0") int page,
             @Parameter(description = "Define quantos objetos serão retornados por query")
             @QueryParam("size") @DefaultValue("4") int size
     ){
-        Set<String> allowed = Set.of("id", "titulo", "letra", "anoLancamento", "nota", "duracaoSegundos");
+        Set<String> allowed = Set.of("id", "modelo", "anoFabricacao", "avaliacao", "cilindradas");
         if(!allowed.contains(sort)){
             sort = "id";
         }
@@ -107,54 +107,49 @@ public class MusicaResource {
 
         int effectivePage = Math.max(page, 0);
 
-        PanacheQuery<Musica> query;
+        PanacheQuery<Carro> query;
 
         if (q == null || q.isBlank()) {
-            query = Musica.findAll(sortObj);
+            query = Carro.findAll(sortObj);
         } else {
             try {
-                // Tenta converter a pesquisa em número
                 int numero = Integer.parseInt(q);
-
-                // Busca apenas em campos numéricos
-                query = Musica.find(
-                        "anoLancamento = ?1 or duracaoSegundos = ?1",
+                query = Carro.find(
+                        "anoFabricacao = ?1 or cilindradas = ?1",
                         sortObj,
                         numero
                 );
-
             } catch (NumberFormatException e) {
-                // se não for número, busca só em campos textuais
-                query = Musica.find(
-                        "lower(titulo) like ?1",
+                query = Carro.find(
+                        "lower(modelo) like ?1",
                         sortObj,
                         "%" + q.toLowerCase() + "%"
                 );
             }
         }
 
-        List<Musica> musicas = query.page(effectivePage, size).list();
+        List<Carro> carros = query.page(effectivePage, size).list();
 
-        var response = new SearchMusicaResponse();
-        response.Musicas = musicas;
-        response.TotalMusicas = query.list().size();
+        var response = new SearchCarroResponse();
+        response.Carros = carros;
+        response.TotalCarros = query.list().size();
         response.TotalPages = query.pageCount();
         response.HasMore = effectivePage < query.pageCount() - 1;
-        response.NextPage = response.HasMore ? "http://localhost:8080/musicas/search?q="+(q != null ? q : "")+"&page="+(effectivePage + 1) + (size > 0 ? "&size="+size : "") : "";
+        response.NextPage = response.HasMore ? "http://localhost:8080/carros/search?q="+(q != null ? q : "")+"&page="+(effectivePage + 1) + (size > 0 ? "&size="+size : "") : "";
 
         return Response.ok(response).build();
     }
 
     @POST
     @Operation(
-            summary = "Adiciona um registro à lista de músicas (insert)",
-            description = "Adiciona um item à lista de músicas por meio de POST e request body JSON"
+            summary = "Adiciona um registro à lista de carros (insert)",
+            description = "Adiciona um item à lista de carros por meio de POST e request body JSON"
     )
     @RequestBody(
             required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Musica.class)
+                    schema = @Schema(implementation = Carro.class)
             )
     )
     @APIResponse(
@@ -162,7 +157,7 @@ public class MusicaResource {
             description = "Created",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Musica.class))
+                    schema = @Schema(implementation = Carro.class))
     )
     @APIResponse(
             responseCode = "400",
@@ -172,47 +167,45 @@ public class MusicaResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
-    public Response insert(@Valid Musica musica){
-
-        // Resolver artista (pode ter apenas id)
-        if(musica.artista != null && musica.artista.id != null){
-            Artista a = Artista.findById(musica.artista.id);
-            if(a == null){
+    public Response insert(@Valid Carro carro){
+        carro.id = null;
+        if(carro.marca != null && carro.marca.id != null){
+            Marca m = Marca.findById(carro.marca.id);
+            if(m == null){
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Artista com id " + musica.artista.id + " não existe").build();
+                        .entity("Marca com id " + carro.marca.id + " não existe").build();
             }
-            musica.artista = a;
+            entity.marca = m;
         } else {
-            musica.artista = null;
+            carro.marca = null;
         }
 
-        // Resolver gêneros musicais (se vierem com id)
-        if(musica.generos != null && !musica.generos.isEmpty()){
-            Set<GeneroMusical> resolved = new HashSet<>();
-            for(GeneroMusical g : musica.generos){
-                if(g == null || g.id == 0){
+        if(carro.acessorios != null && !carro.acessorios.isEmpty()){
+            Set<Acessorio> resolved = new HashSet<>();
+            for(Acessorio a : carro.acessorios){
+                if(a == null || a.id == 0){
                     continue;
                 }
-                GeneroMusical fetched = GeneroMusical.findById(g.id);
+                Acessorio fetched = Acessorio.findById(a.id);
                 if(fetched == null){
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity("Genero Musical com id " + g.id + " não existe").build();
+                            .entity("Acessório com id " + a.id + " não existe").build();
                 }
                 resolved.add(fetched);
             }
-            musica.generos = resolved;
+            carro.acessorios = resolved;
         } else {
-            musica.generos = new HashSet<>();
+            carro.acessorios = new HashSet<>();
         }
 
-        Musica.persist(musica);
+        Carro.persist(carro);
         return Response.status(Response.Status.CREATED).build();
     }
 
     @DELETE
     @Operation(
-            summary = "Remove um registro da lista de músicas (delete)",
-            description = "Remove um item da lista de músicas por meio de Id na URL"
+            summary = "Remove um registro da lista de carros (delete)",
+            description = "Remove um item da lista de carros por meio de Id na URL"
     )
     @APIResponse(
             responseCode = "204",
@@ -231,29 +224,28 @@ public class MusicaResource {
     @Transactional
     @Path("{id}")
     public Response delete(@PathParam("id") long id){
-        Musica entity = Musica.findById(id);
+        Carro entity = Carro.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // Remove associações ManyToMany antes de deletar
-        entity.generos.clear();
+        entity.acessorios.clear();
         entity.persist();
 
-        Musica.deleteById(id);
+        Carro.deleteById(id);
         return Response.noContent().build();
     }
 
     @PUT
     @Operation(
-            summary = "Altera um registro da lista de músicas (update)",
-            description = "Edita um item da lista de músicas por meio de Id na URL e request body JSON"
+            summary = "Altera um registro da lista de carros (update)",
+            description = "Edita um item da lista de carros por meio de Id na URL e request body JSON"
     )
     @RequestBody(
             required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Musica.class)
+                    schema = @Schema(implementation = Carro.class)
             )
     )
     @APIResponse(
@@ -261,7 +253,7 @@ public class MusicaResource {
             description = "Item editado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Musica.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Carro.class, type = SchemaType.ARRAY)
             )
     )
     @APIResponse(
@@ -273,46 +265,45 @@ public class MusicaResource {
     )
     @Transactional
     @Path("{id}")
-    public Response update(@PathParam("id") long id,@Valid Musica newMusica){
-        Musica entity = Musica.findById(id);
+    public Response update(@PathParam("id") long id,@Valid Carro newCarro){
+        Carro entity = Carro.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        entity.titulo = newMusica.titulo;
-        entity.letra = newMusica.letra;
-        entity.anoLancamento = newMusica.anoLancamento;
-        entity.nota = newMusica.nota;
-        entity.duracaoSegundos = newMusica.duracaoSegundos;
+        entity.modelo = newCarro.modelo;
+        entity.descricao = newCarro.descricao;
+        entity.anoFabricacao = newCarro.anoFabricacao;
+        entity.avaliacao = newCarro.avaliacao;
+        entity.cilindradas = newCarro.cilindradas;
 
-        // Resolver artista
-        if(newMusica.artista != null && newMusica.artista.id != null){
-            Artista a = Artista.findById(newMusica.artista.id);
-            if(a == null){
+        if(newCarro.marca != null && newCarro.marca.id != null){
+            Marca m = Marca.findById(newCarro.marca.id);
+            if(m == null){
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Artista com id " + newMusica.artista.id + " não existe").build();
+                        .entity("Marca com id " + newCarro.marca.id + " não existe").build();
             }
-            entity.artista = a;
+            entity.marca = m;
         } else {
-            entity.artista = null;
+            entity.marca = null;
         }
 
-        // Resolver gêneros
-        if(newMusica.generos != null){
-            Set<GeneroMusical> resolved = new HashSet<>();
-            for(GeneroMusical g : newMusica.generos){
-                if(g == null || g.id == 0) continue;
-                GeneroMusical fetched = GeneroMusical.findById(g.id);
+        if(newCarro.acessorios != null){
+            Set<Acessorio> resolved = new HashSet<>();
+            for(Acessorio a : newCarro.acessorios){
+                if(a == null || a.id == 0) continue;
+                Acessorio fetched = Acessorio.findById(a.id);
                 if(fetched == null){
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity("Genero Musical com id " + g.id + " não existe").build();
+                            .entity("Acessório com id " + a.id + " não existe").build();
                 }
                 resolved.add(fetched);
             }
-            entity.generos = resolved;
+            entity.acessorios = resolved;
         } else {
-            entity.generos = new HashSet<>();
+            entity.acessorios = new HashSet<>();
         }
-
+        
+        entity.persist(); // Linha adicionada para persistir as mudanças
         return Response.status(Response.Status.OK).entity(entity).build();
     }
 }

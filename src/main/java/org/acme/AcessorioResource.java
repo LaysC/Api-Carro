@@ -17,37 +17,37 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import java.util.List;
 import java.util.Set;
 
-@Path("/generos-musicais")
-public class GeneroMusicalResource {
+@Path("/acessorios")
+public class AcessorioResource {
     @GET
     @Operation(
-            summary = "Retorna todos os gêneros musicais (getAll)",
-            description = "Retorna uma lista de gêneros musicais por padrão no formato JSON"
+            summary = "Retorna todos os acessórios (getAll)",
+            description = "Retorna uma lista de acessórios por padrão no formato JSON"
     )
     @APIResponse(
             responseCode = "200",
             description = "Lista retornada com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = GeneroMusical.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Acessorio.class, type = SchemaType.ARRAY)
             )
     )
     public Response getAll(){
-        return Response.ok(GeneroMusical.listAll()).build();
+        return Response.ok(Acessorio.listAll()).build();
     }
 
     @GET
     @Path("{id}")
     @Operation(
-            summary = "Retorna um gênero musical pela busca por ID (getById)",
-            description = "Retorna um gênero musical específico pela busca de ID colocado na URL no formato JSON por padrão"
+            summary = "Retorna um acessório pela busca por ID (getById)",
+            description = "Retorna um acessório específico pela busca de ID colocado na URL no formato JSON por padrão"
     )
     @APIResponse(
             responseCode = "200",
             description = "Item retornado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = GeneroMusical.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Acessorio.class, type = SchemaType.ARRAY)
             )
     )
     @APIResponse(
@@ -58,9 +58,9 @@ public class GeneroMusicalResource {
                     schema = @Schema(implementation = String.class))
     )
     public Response getById(
-            @Parameter(description = "Id do gênero musical a ser pesquisado", required = true)
+            @Parameter(description = "Id do acessório a ser pesquisado", required = true)
             @PathParam("id") long id){
-        GeneroMusical entity = GeneroMusical.findById(id);
+        Acessorio entity = Acessorio.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -69,15 +69,15 @@ public class GeneroMusicalResource {
 
     @GET
     @Operation(
-            summary = "Retorna os gêneros musicais conforme o sistema de pesquisa (search)",
-            description = "Retorna uma lista de gêneros musicais filtrada conforme a pesquisa por padrão no formato JSON"
+            summary = "Retorna os acessórios conforme o sistema de pesquisa (search)",
+            description = "Retorna uma lista de acessórios filtrada conforme a pesquisa por padrão no formato JSON"
     )
     @APIResponse(
             responseCode = "200",
             description = "Item retornado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = GeneroMusical.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Acessorio.class, type = SchemaType.ARRAY)
             )
     )
     @Path("/search")
@@ -86,7 +86,7 @@ public class GeneroMusicalResource {
             @QueryParam("q") String q,
             @Parameter(description = "Campo de ordenação da lista de retorno")
             @QueryParam("sort") @DefaultValue("id") String sort,
-            @Parameter(description = "Esquema de filtragem de gêneros musicais por ordem crescente ou decrescente")
+            @Parameter(description = "Esquema de filtragem de acessórios por ordem crescente ou decrescente")
             @QueryParam("direction") @DefaultValue("asc") String direction,
             @Parameter(description = "Define qual página será retornada na response")
             @QueryParam("page") @DefaultValue("0") int page,
@@ -105,37 +105,37 @@ public class GeneroMusicalResource {
 
         int effectivePage = Math.max(page, 0);
 
-        PanacheQuery<GeneroMusical> query;
+        PanacheQuery<Acessorio> query;
 
         if (q == null || q.isBlank()) {
-            query = GeneroMusical.findAll(sortObj);
+            query = Acessorio.findAll(sortObj);
         } else {
-            query = GeneroMusical.find(
+            query = Acessorio.find(
                     "lower(nome) like ?1 or lower(descricao) like ?1", sortObj, "%" + q.toLowerCase() + "%");
         }
 
-        List<GeneroMusical> generos = query.page(effectivePage, size).list();
+        List<Acessorio> acessorios = query.page(effectivePage, size).list();
 
-        var response = new SearchGeneroMusicalResponse();
-        response.GenerosMusicais = generos;
-        response.TotalGenerosMusicais = query.list().size();
+        var response = new SearchAcessorioResponse();
+        response.Acessorios = acessorios;
+        response.TotalAcessorios = query.list().size();
         response.TotalPages = query.pageCount();
         response.HasMore = effectivePage < query.pageCount() - 1;
-        response.NextPage = response.HasMore ? "http://localhost:8080/generos-musicais/search?q="+(q != null ? q : "")+"&page="+(effectivePage + 1) + (size > 0 ? "&size="+size : "") : "";
+        response.NextPage = response.HasMore ? "http://localhost:8080/acessorios/search?q="+(q != null ? q : "")+"&page="+(effectivePage + 1) + (size > 0 ? "&size="+size : "") : "";
 
         return Response.ok(response).build();
     }
 
     @POST
     @Operation(
-            summary = "Adiciona um registro à lista de gêneros musicais (insert)",
-            description = "Adiciona um item à lista de gêneros musicais por meio de POST e request body JSON"
+            summary = "Adiciona um registro à lista de acessórios (insert)",
+            description = "Adiciona um item à lista de acessórios por meio de POST e request body JSON"
     )
     @RequestBody(
             required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = GeneroMusical.class)
+                    schema = @Schema(implementation = Acessorio.class)
             )
     )
     @APIResponse(
@@ -143,7 +143,7 @@ public class GeneroMusicalResource {
             description = "Created",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = GeneroMusical.class))
+                    schema = @Schema(implementation = Acessorio.class))
     )
     @APIResponse(
             responseCode = "400",
@@ -153,15 +153,15 @@ public class GeneroMusicalResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
-    public Response insert(@Valid GeneroMusical genero){
-        GeneroMusical.persist(genero);
+    public Response insert(@Valid Acessorio acessorio){
+        Acessorio.persist(acessorio);
         return Response.status(Response.Status.CREATED).build();
     }
 
     @DELETE
     @Operation(
-            summary = "Remove um registro da lista de gêneros musicais (delete)",
-            description = "Remove um item da lista de gêneros musicais por meio de Id na URL"
+            summary = "Remove um registro da lista de acessórios (delete)",
+            description = "Remove um item da lista de acessórios por meio de Id na URL"
     )
     @APIResponse(
             responseCode = "204",
@@ -179,7 +179,7 @@ public class GeneroMusicalResource {
     )
     @APIResponse(
             responseCode = "409",
-            description = "Conflito - Gênero musical possui músicas vinculadas",
+            description = "Conflito - Acessório possui carros vinculados",
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
@@ -187,32 +187,31 @@ public class GeneroMusicalResource {
     @Transactional
     @Path("{id}")
     public Response delete(@PathParam("id") long id){
-        GeneroMusical entity = GeneroMusical.findById(id);
+        Acessorio entity = Acessorio.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        long musicasVinculadas = Musica.count("?1 MEMBER OF generos", entity);
-        if(musicasVinculadas > 0){
+        long carrosVinculados = Carro.count("?1 MEMBER OF acessorios", entity);
+        if(carrosVinculados > 0){
             return Response.status(Response.Status.CONFLICT)
-                    .entity("Não é possível deletar o gênero musical. Existem " + musicasVinculadas + " música(s) vinculada(s).")
+                    .entity("Não é possível deletar o acessório. Existem " + carrosVinculados + " carro(s) vinculado(s).")
                     .build();
         }
 
-        GeneroMusical.deleteById(id);
+        Acessorio.deleteById(id);
         return Response.noContent().build();
     }
 
     @PUT
     @Operation(
-            summary = "Altera um registro da lista de gêneros musicais (update)",
-            description = "Edita um item da lista de gêneros musicais por meio de Id na URL e request body JSON"
+            summary = "Altera um registro da lista de acessórios (update)",
+            description = "Edita um item da lista de acessórios por meio de Id na URL e request body JSON"
     )
     @RequestBody(
             required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = GeneroMusical.class)
+                    schema = @Schema(implementation = Acessorio.class)
             )
     )
     @APIResponse(
@@ -220,7 +219,7 @@ public class GeneroMusicalResource {
             description = "Item editado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = GeneroMusical.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Acessorio.class, type = SchemaType.ARRAY)
             )
     )
     @APIResponse(
@@ -232,13 +231,13 @@ public class GeneroMusicalResource {
     )
     @Transactional
     @Path("{id}")
-    public Response update(@PathParam("id") long id,@Valid GeneroMusical newGeneroMusical){
-        GeneroMusical entity = GeneroMusical.findById(id);
+    public Response update(@PathParam("id") long id, @Valid Acessorio newAcessorio){
+        Acessorio entity = Acessorio.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        entity.nome = newGeneroMusical.nome;
-        entity.descricao = newGeneroMusical.descricao;
+        entity.nome = newAcessorio.nome;
+        entity.descricao = newAcessorio.descricao;
 
         return Response.status(Response.Status.OK).entity(entity).build();
     }

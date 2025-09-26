@@ -175,7 +175,7 @@ public class CarroResource {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Marca com id " + carro.marca.id + " não existe").build();
             }
-            entity.marca = m;
+            carro.marca = m;
         } else {
             carro.marca = null;
         }
@@ -303,7 +303,7 @@ public class CarroResource {
             entity.acessorios = new HashSet<>();
         }
         
-        entity.persist(); // Linha adicionada para persistir as mudanças
+        entity.persist();
         return Response.status(Response.Status.OK).entity(entity).build();
     }
 }

@@ -47,8 +47,7 @@ public class MarcaResource {
             required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Marca.class),
-                    example = "{\n  \"nomeDaMarca\": \"Fiat\",\n  \"nomeCompletoEmpresa\": \"Fiat S.p.A.\",\n  \"dataDeFundacao\": \"1899-07-11\",\n  \"paisDeOrigem\": \"Itália\",\n  \"perfil\": {\n    \"historia\": \"A Fiat foi fundada em 1899 em Turim.\",\n    \"fundadores\": \"Giovanni Agnelli\",\n    \"premiosConquistados\": \"Carro do Ano na Europa\"\n  }\n}"
+                    schema = @Schema(implementation = Marca.class)
             )
     )
     @APIResponse(responseCode = "201", description = "Marca criada")
@@ -84,7 +83,6 @@ public class MarcaResource {
                         .build();
             }
             marca.nomeDaMarca = marcaAtualizada.nomeDaMarca;
-            // Outros campos devem ser atualizados aqui se necessário
             marca.persist();
             return Response.ok(marca).build();
         }
